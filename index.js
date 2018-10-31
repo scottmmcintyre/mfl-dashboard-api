@@ -23,21 +23,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.get("/url", (req, res, next) => {
-    res.json(['Tony', 'Lisa']);
-})
-
-// app.get("/export/myleagues/:MFL_USER_ID", (req, res, next) => {
-//     axios({
-//         url: 'https://api.myfantasyleague.com/2018/export?TYPE=myleagues&FRANCHISE_NAMES=1&JSON=1',
-//         method: "get",
-//         headers: {
-//             'Cookie': 'MFL_USER_ID=' + req.params.MFL_USER_ID
-//         }
-//     }).then((response) => res.json(response.data))
-//     .catch( (err) => console.log(err));
-// });
-
 app.get("/export/myleagues/:MFL_USER_ID", (req, res, next) => {
     axios({
         url: 'https://api.myfantasyleague.com/2018/export?TYPE=myleagues&FRANCHISE_NAMES=1&JSON=1',
@@ -65,17 +50,6 @@ app.get("/export/myleagues/:MFL_USER_ID", (req, res, next) => {
     })
     .catch( (err) => console.log(err));
 });
-
-// app.get("/export/players/:MFL_USER_ID", (req, res, next) => {
-//     axios({
-//         url: 'https://api.myfantasyleague.com/2018/export?TYPE=players&DETAILS=&SINCE=&PLAYERS=&JSON=1',
-//         method: "get",
-//         headers: {
-//             'Cookie': 'MFL_USER_ID=' + req.params.MFL_USER_ID
-//         }
-//     }).then((response) => res.json(response.data))
-//     .catch( (err) => console.log(err));
-// });
 
 app.get("/export/players/:MFL_USER_ID", (req, res, next) => {
     axios({
@@ -122,6 +96,29 @@ app.get("/export/rosters/:MFL_USER_ID/league/:LEAGUE_ID/franchise/:FRANCHISE_ID"
     .catch( (err) => console.log(err));
 });
 
+app.get("/export/leagueStandings/:MFL_USER_ID/league/:LEAGUE_ID/franchise/:FRANCHISE_ID", (req, res, next) => {
+    axios({
+        url: 'https://api.myfantasyleague.com/2018/export?TYPE=leagueStandings&L='+ req.params.LEAGUE_ID +'&APIKEY=&JSON=1',
+        method: "get",
+        headers: {
+            'Cookie': 'MFL_USER_ID=' + req.params.MFL_USER_ID
+        }
+    }).then((response) => {
+        const standingsData = {};
+
+        response.data.leagueStandings.franchise.forEach(standings => {
+            if (standings.id == req.params.FRANCHISE_ID) {
+                standingsData['record'] = standings.h2hw + ' - ' + standings.h2hl;
+                standingsData['points_for'] = standings.pf;
+                standingsData['points_against'] = standings.pa;
+                standingsData['all_play_record'] = standings.all_play_w + ' - ' + standings.all_play_l;
+            }
+        });
+        standingsData['league_id'] = req.params.LEAGUE_ID;
+        res.json(standingsData);
+    })
+    .catch( (err) => console.log(err));
+});
 app.listen(4000, () => {
     console.log("Server running on port 4000");
 });
